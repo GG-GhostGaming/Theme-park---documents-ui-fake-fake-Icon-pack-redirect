@@ -49,10 +49,10 @@ jobs:
             echo "sdkmanager not found; assuming setup-android installed components"
           fi
 
-      - name: Install Gradle 8.5
+      - name: Install Gradle 8.7
         run: |
           set -e
-          GRADLE_VERSION=8.5
+          GRADLE_VERSION=8.7
           ZIP=gradle-${GRADLE_VERSION}-bin.zip
           wget -q https://services.gradle.org/distributions/${ZIP}
           sudo mkdir -p /opt/gradle
