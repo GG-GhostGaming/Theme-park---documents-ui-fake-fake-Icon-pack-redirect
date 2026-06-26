@@ -3,42 +3,39 @@
     package="com.user.iconpack">
 
     <application
-        android:allowBackup="false"
-        android:icon="@android:drawable/sym_def_app_icon"
-        android:label=" a custom one"
-        android:theme="@android:style/Theme.NoDisplay">
-
-        <!-- Meta-data to help some launchers discover this package as an icon pack -->
-        <meta-data android:name="com.gau.go.launcher.THEME" android:resource="@xml/iconpack_meta" />
-        <meta-data android:name="com.novalauncher.THEME" android:resource="@xml/iconpack_meta" />
-        <meta-data android:name="com.anddoes.launcher.THEME" android:resource="@xml/iconpack_meta" />
-        <meta-data android:name="org.adw.launcher.THEMES" android:resource="@xml/iconpack_meta" />
+        android:allowBackup="true"
+        android:label="IconPack" >
 
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:excludeFromRecents="true">
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-            <!-- Expose this activity as an icon-pack target for common launchers -->
-            <intent-filter>
-                <action android:name="org.adw.launcher.THEMES" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.gau.go.launcher.THEMES" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.novalauncher.THEME" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+        <activity
+            android:name=".IconListActivity"
+            android:exported="true">
+            <!-- Icon pack intent filters so launchers / Theme Park open our picker -->
             <intent-filter>
                 <action android:name="com.anddoes.launcher.THEME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
-            <!-- No MAIN/LAUNCHER intent-filter so this app does not appear in the app drawer -->
+            <intent-filter>
+                <action android:name="com.gau.go.launcherex.THEME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.adw.launcher.THEMES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
+
+        <!-- Keep existing DocLauncherActivity if present; ensure exported true so Theme Park can call it if needed -->
+        <activity android:name=".DocLauncherActivity" android:exported="true" />
+
     </application>
+
 </manifest>

@@ -1,1 +1,1 @@
-Trigger build: ensure DocLauncherActivity starts document picker for result and forwards result back to caller (2026-06-26T10:06:00Z)
+Trigger build: implement MainActivity -> external picker flow, IconListActivity to return saved content URIs; trigger CI (2026-06-26T10:20:00Z)
