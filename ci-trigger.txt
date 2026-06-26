@@ -1,3 +1,1 @@
-Trigger build for final icon-pack changes at 2026-06-26T09:19:00Z
-
-This file is updated to trigger CI.
+Trigger build to try launching target activity and update label to '! use custom' at 2026-06-26T09:25:00Z
