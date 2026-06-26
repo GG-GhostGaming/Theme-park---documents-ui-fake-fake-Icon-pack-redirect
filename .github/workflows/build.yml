@@ -33,13 +33,21 @@ jobs:
 
       - name: Generate Gradle wrapper (if missing)
         run: |
+          # generate a wrapper at the repo root if possible
           gradle wrapper --gradle-version 8.5 || true
 
-      - name: Make wrapper executable
-        run: chmod +x ./gradlew || true
+      - name: Make wrapper executable (if present)
+        run: |
+          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
 
-      - name: Build debug APK with wrapper
-        run: ./gradlew assembleDebug --no-daemon
+      - name: Build debug APK
+        run: |
+          # Build the app module explicitly. Prefer the wrapper if present.
+          if [ -f ./gradlew ]; then
+            ./gradlew -p app assembleDebug --no-daemon
+          else
+            gradle -p app assembleDebug --no-daemon
+          fi
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
