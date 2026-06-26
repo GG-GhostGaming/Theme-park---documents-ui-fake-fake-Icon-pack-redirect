@@ -1,9 +1,11 @@
 package com.user.iconpack;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -61,6 +63,24 @@ public class IconListActivity extends Activity {
                     Uri u = Uri.parse(uriString);
                     Intent result = new Intent();
                     result.setData(u);
+
+                    // Grant read permission on the returned URI so the caller (launcher/Theme Park) can access it
+                    result.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    // Add ClipData for broader compatibility with some launchers
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        ClipData clip = ClipData.newRawUri("icon", u);
+                        result.setClipData(clip);
+                    }
+
+                    // If we know who called us, explicitly grant URI permission to that package
+                    try {
+                        String caller = getCallingPackage();
+                        if (caller != null) grantUriPermission(caller, u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch (Exception ignore) {
+                        Log.w(TAG, "Could not grant explicit URI permission to caller", ignore);
+                    }
+
                     setResult(RESULT_OK, result);
                 } catch (Exception e) {
                     Log.w(TAG, "Failed to return selected URI", e);

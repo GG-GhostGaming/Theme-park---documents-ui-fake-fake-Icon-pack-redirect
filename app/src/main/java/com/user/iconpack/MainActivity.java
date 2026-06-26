@@ -1,6 +1,7 @@
 package com.user.iconpack;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,16 +32,20 @@ public class MainActivity extends Activity {
             Intent intent = new Intent();
             intent.setClassName("ginlemon.iconpackstudio", "ginlemon.iconpackstudio.editor.configPickerActivity.IconPickerActivity");
 
+            // Request temporary read permission; external pickers may not grant persistable permissions
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
             // Start for result so we can receive the selected file URI
             startActivityForResult(intent, REQUEST_PICKER);
         } catch (Exception e) {
             Log.w(TAG, "Could not start ginlemon picker; falling back to system picker", e);
             Toast.makeText(this, "Falling back to system picker", Toast.LENGTH_SHORT).show();
 
-            // Fallback to system picker
+            // Fallback to system picker - request persistable permission here so we can call takePersistableUriPermission later
             Intent pick = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             pick.addCategory(Intent.CATEGORY_OPENABLE);
             pick.setType("*/*");
+            pick.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             startActivityForResult(pick, REQUEST_PICKER);
         }
     }
@@ -61,19 +66,34 @@ public class MainActivity extends Activity {
         }
 
         Uri uri = data.getData();
+        // handle ClipData if returned instead
+        if (uri == null && data.getClipData() != null && data.getClipData().getItemCount() > 0) {
+            uri = data.getClipData().getItemAt(0).getUri();
+        }
+
         if (uri == null) {
             Toast.makeText(this, "Picker returned no URI", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        try {
-            // Persist permission so we can access the content later
-            final int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            ContentResolver resolver = getContentResolver();
-            resolver.takePersistableUriPermission(uri, takeFlags);
+        ContentResolver resolver = getContentResolver();
 
-            // Optionally copy the content into our app private storage for faster access and to have a local copy
+        try {
+            // Attempt to persist permission if the picker granted it. Not all pickers will do this.
+            final int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            try {
+                if ((takeFlags & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0) {
+                    // Only request read/write flags for persistence
+                    int persistFlags = takeFlags & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    resolver.takePersistableUriPermission(uri, persistFlags);
+                }
+            } catch (SecurityException se) {
+                // No persistable grants — this is expected for some third-party pickers. We'll fall back to copying the content now.
+                Log.w(TAG, "No persistable permission grants available for URI; proceeding without persisting", se);
+            }
+
+            // Copy the content into our app private storage (works even if we only have a temporary grant)
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
             File iconsDir = new File(getFilesDir(), "icons");
             if (!iconsDir.exists()) iconsDir.mkdirs();
@@ -85,7 +105,7 @@ public class MainActivity extends Activity {
                 while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
             }
 
-            // Save metadata: store the persisted content URI and a display name in SharedPreferences
+            // Save metadata: store the persisted content URI (if any) and a display name in SharedPreferences
             String entry = timestamp + "|" + uri.toString() + "|" + outFile.getName();
             SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
             String existing = prefs.getString(ICONS_KEY, "");
