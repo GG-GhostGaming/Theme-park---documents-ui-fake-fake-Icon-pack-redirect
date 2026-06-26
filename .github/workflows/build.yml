@@ -24,25 +24,38 @@ jobs:
           components: |
             platform-tools
             build-tools;34.0.0
-            platform;android-34
+            platforms;android-34
+            cmdline-tools;latest
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.5'
-
-      - name: Generate Gradle wrapper (if missing)
+      - name: Accept Android SDK licenses
         run: |
-          # generate a wrapper at the repo root if possible
-          gradle wrapper --gradle-version 8.5 || true
+          set -e
+          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          elif [ -x "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" ]; then
+            yes | "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" --licenses || true
+          else
+            echo "sdkmanager not found; skipping license acceptance"
+          fi
 
-      - name: Make wrapper executable (if present)
+      - name: Ensure required SDK components installed
+        run: |
+          set -e
+          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
+          elif [ -x "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" ]; then
+            "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
+          else
+            echo "sdkmanager not found; assuming setup-android installed components"
+          fi
+
+      - name: Make wrapper executable if present
         run: |
           if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
 
-      - name: Build debug APK
+      - name: Build debug APK (prefer wrapper)
         run: |
-          # Build the app module explicitly. Prefer the wrapper if present.
+          set -e
           if [ -f ./gradlew ]; then
             ./gradlew -p app assembleDebug --no-daemon
           else
