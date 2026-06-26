@@ -12,6 +12,7 @@ import android.provider.DocumentsProvider;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 public class MyDocumentsProvider extends DocumentsProvider {
     private static final String ROOT_ID = "root";
@@ -26,44 +27,66 @@ public class MyDocumentsProvider extends DocumentsProvider {
 
     @Override
     public Cursor queryRoots(String[] projection) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DocumentsContract.Root.getProjection());
+        String[] rootProjection = projection != null ? projection : new String[] {
+            DocumentsContract.Root.COLUMN_ROOT_ID,
+            DocumentsContract.Root.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Root.COLUMN_TITLE,
+            DocumentsContract.Root.COLUMN_FLAGS,
+            DocumentsContract.Root.COLUMN_AVAILABLE_BYTES
+        };
+
+        final MatrixCursor result = new MatrixCursor(rootProjection);
 
         final MatrixCursor.RowBuilder row = result.newRow();
-        // Required columns
         row.add(DocumentsContract.Root.COLUMN_ROOT_ID, ROOT_ID);
         row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, DOC_ID);
         row.add(DocumentsContract.Root.COLUMN_TITLE, "Icon Pack Files");
-        // Flags: supports create, local only
         row.add(DocumentsContract.Root.COLUMN_FLAGS, DocumentsContract.Root.FLAG_SUPPORTS_CREATE);
-        row.add(DocumentsContract.Root.COLUMN_AVAILABLE_BYTES, 0);
+        row.add(DocumentsContract.Root.COLUMN_AVAILABLE_BYTES, 0L);
 
         return result;
     }
 
     @Override
     public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DocumentsContract.Document.getProjection());
+        String[] docProjection = projection != null ? projection : new String[] {
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_FLAGS,
+            DocumentsContract.Document.COLUMN_SIZE
+        };
+
+        final MatrixCursor result = new MatrixCursor(docProjection);
         if (ROOT_ID.equals(parentDocumentId)) {
             MatrixCursor.RowBuilder row = result.newRow();
             row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DOC_ID);
             row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, DOC_DISPLAY_NAME);
             row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, DOC_MIME_TYPE);
             row.add(DocumentsContract.Document.COLUMN_FLAGS, DocumentsContract.Document.FLAG_SUPPORTS_WRITE);
-            row.add(DocumentsContract.Document.COLUMN_SIZE, 16);
+            row.add(DocumentsContract.Document.COLUMN_SIZE, 16L);
         }
         return result;
     }
 
     @Override
     public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DocumentsContract.Document.getProjection());
+        String[] docProjection = projection != null ? projection : new String[] {
+            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+            DocumentsContract.Document.COLUMN_MIME_TYPE,
+            DocumentsContract.Document.COLUMN_FLAGS,
+            DocumentsContract.Document.COLUMN_SIZE
+        };
+
+        final MatrixCursor result = new MatrixCursor(docProjection);
         if (DOC_ID.equals(documentId)) {
             MatrixCursor.RowBuilder row = result.newRow();
             row.add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DOC_ID);
             row.add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, DOC_DISPLAY_NAME);
             row.add(DocumentsContract.Document.COLUMN_MIME_TYPE, DOC_MIME_TYPE);
             row.add(DocumentsContract.Document.COLUMN_FLAGS, DocumentsContract.Document.FLAG_SUPPORTS_WRITE);
-            row.add(DocumentsContract.Document.COLUMN_SIZE, 16);
+            row.add(DocumentsContract.Document.COLUMN_SIZE, 16L);
         }
         return result;
     }
