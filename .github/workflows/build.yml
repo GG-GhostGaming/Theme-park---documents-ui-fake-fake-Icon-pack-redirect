@@ -49,10 +49,18 @@ jobs:
             echo "sdkmanager not found; assuming setup-android installed components"
           fi
 
-      - name: Set up Gradle (system)
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.5'
+      - name: Install Gradle 8.5
+        run: |
+          set -e
+          GRADLE_VERSION=8.5
+          ZIP=gradle-${GRADLE_VERSION}-bin.zip
+          wget -q https://services.gradle.org/distributions/${ZIP}
+          sudo mkdir -p /opt/gradle
+          sudo unzip -q ${ZIP} -d /opt/gradle
+          echo "/opt/gradle/gradle-${GRADLE_VERSION}/bin" >> $GITHUB_PATH
+
+      - name: Verify gradle
+        run: gradle --version
 
       - name: Build debug APK (use system Gradle)
         run: |
