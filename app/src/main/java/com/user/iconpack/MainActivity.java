@@ -1,41 +1,38 @@
 package com.user.iconpack;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
 public class MainActivity extends Activity {
-    private static final int REQUEST_OPEN_DOCUMENT = 1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Always try to open the system Documents UI immediately when the activity starts.
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
+
+        // Try to launch the external IconPickerActivity in the ginlemon.iconpackstudio app.
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(
+                "ginlemon.iconpackstudio",
+                "ginlemon.iconpackstudio.editor.configPickerActivity.IconPickerActivity"));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         try {
-            // Prefer startActivityForResult so we can return here if needed, then finish.
-            startActivityForResult(intent, REQUEST_OPEN_DOCUMENT);
-        } catch (Exception e1) {
+            startActivity(intent);
+            // Successfully launched external activity — finish our activity so it doesn't stay visible.
+            finish();
+            return;
+        } catch (Exception e) {
+            // If the external activity isn't available or fails to start, fall back to requesting the system document picker.
             try {
-                // Fallback: start as a new task (some launchers/runtimes require this)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                // We launched the documents UI; finish to avoid staying visible.
-                finish();
-            } catch (Exception e2) {
-                // If all else fails, just finish the activity.
-                finish();
+                Intent docIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                docIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                docIntent.setType("*/*");
+                startActivity(docIntent);
+            } catch (Exception ex) {
+                // If everything fails, just finish.
             }
+            finish();
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // We don't need to do anything with the picked document; close immediately.
-        finish();
     }
 }
