@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Minimal icon-pack metadata referencing a drawable resource launchers can use as a sample icon -->
+    <item name="icon_preview" type="drawable">@android:drawable/sym_def_app_icon</item>
+</resources>

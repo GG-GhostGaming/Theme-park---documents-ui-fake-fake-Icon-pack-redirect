@@ -16,8 +16,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Attempt 1: explicit component (preferred)
-        Intent explicit = new Intent();
+        // Attempt 1: explicit component with ACTION_MAIN (preferred)
+        Intent explicit = new Intent(Intent.ACTION_MAIN);
         explicit.setComponent(new ComponentName(TARGET_PACKAGE, TARGET_CLASS));
         explicit.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {

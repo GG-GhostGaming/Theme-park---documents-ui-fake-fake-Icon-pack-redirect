@@ -5,8 +5,15 @@
     <application
         android:allowBackup="false"
         android:icon="@android:drawable/sym_def_app_icon"
-        android:label="! use custom"
+        android:label=" a custom one"
         android:theme="@android:style/Theme.NoDisplay">
+
+        <!-- Meta-data to help some launchers discover this package as an icon pack -->
+        <meta-data android:name="com.gau.go.launcher.THEME" android:resource="@xml/iconpack_meta" />
+        <meta-data android:name="com.novalauncher.THEME" android:resource="@xml/iconpack_meta" />
+        <meta-data android:name="com.anddoes.launcher.THEME" android:resource="@xml/iconpack_meta" />
+        <meta-data android:name="org.adw.launcher.THEMES" android:resource="@xml/iconpack_meta" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

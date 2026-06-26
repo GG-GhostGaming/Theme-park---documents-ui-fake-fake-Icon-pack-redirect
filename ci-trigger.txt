@@ -1,1 +1,1 @@
-Trigger build to try launching target activity and update label to '! use custom' at 2026-06-26T09:25:00Z
+Trigger build: add minimal icon metadata and retry launching target activity (2026-06-26T09:38:00Z)
