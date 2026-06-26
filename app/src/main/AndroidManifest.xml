@@ -6,6 +6,16 @@
         android:allowBackup="true"
         android:label="IconPack" >
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.user.iconpack.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -29,6 +39,15 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="org.adw.launcher.THEMES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Broader filters to catch other theme/picker actions from Theme Park -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

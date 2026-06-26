@@ -14,6 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +24,17 @@ public class IconListActivity extends Activity {
     private static final String TAG = "IconListActivity";
     private static final String PREFS = "iconpack_prefs";
     private static final String ICONS_KEY = "icons_list";
+    private static final String AUTHORITY = "com.user.iconpack.fileprovider";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent incoming = getIntent();
+        String action = incoming != null ? incoming.getAction() : null;
+        int flags = incoming != null ? incoming.getFlags() : 0;
+        String caller = getCallingPackage();
+        Log.i(TAG, "IconListActivity started action=" + action + " flags=0x" + Integer.toHexString(flags) + " caller=" + caller);
 
         ListView listView = new ListView(this);
         setContentView(listView);
@@ -33,18 +43,35 @@ public class IconListActivity extends Activity {
         String raw = prefs.getString(ICONS_KEY, "");
 
         final List<String> display = new ArrayList<>();
-        final List<String> uriList = new ArrayList<>();
+        final List<Uri> uriList = new ArrayList<>();
 
         if (!raw.isEmpty()) {
             String[] items = raw.split(";");
             for (String it : items) {
-                // format: timestamp|uri|name
-                String[] parts = it.split("\\|", 3);
-                if (parts.length >= 2) {
-                    String uri = parts[1];
-                    String name = parts.length == 3 ? parts[2] : parts[0];
-                    display.add(name + " (" + parts[0] + ")");
-                    uriList.add(uri);
+                // format: timestamp|originalUri|localPath|publicUri(optional)
+                String[] parts = it.split("\\|", 4);
+                if (parts.length >= 3) {
+                    String timestamp = parts[0];
+                    String original = parts[1];
+                    String localPath = parts[2];
+                    String publicUri = parts.length >= 4 ? parts[3] : "";
+
+                    String name = localPath != null ? localPath : timestamp;
+                    display.add(name + " (" + timestamp + ")");
+
+                    // Prefer publicUri (if present) so other apps can access it. Fall back to FileProvider for local copies.
+                    if (publicUri != null && !publicUri.isEmpty()) {
+                        uriList.add(Uri.parse(publicUri));
+                    } else {
+                        try {
+                            File f = new File(getFilesDir(), localPath);
+                            Uri fp = FileProvider.getUriForFile(this, AUTHORITY, f);
+                            uriList.add(fp);
+                        } catch (Exception e) {
+                            Log.w(TAG, "Failed to get FileProvider URI for local file, falling back to file://", e);
+                            uriList.add(Uri.fromFile(new File(getFilesDir(), localPath)));
+                        }
+                    }
                 }
             }
         }
@@ -58,9 +85,8 @@ public class IconListActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (uriList.isEmpty()) return;
-                String uriString = uriList.get(position);
+                Uri u = uriList.get(position);
                 try {
-                    Uri u = Uri.parse(uriString);
                     Intent result = new Intent();
                     result.setData(u);
 
@@ -77,6 +103,7 @@ public class IconListActivity extends Activity {
                     try {
                         String caller = getCallingPackage();
                         if (caller != null) grantUriPermission(caller, u, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        Log.i(TAG, "Granted URI permission to " + caller + " for " + u);
                     } catch (Exception ignore) {
                         Log.w(TAG, "Could not grant explicit URI permission to caller", ignore);
                     }
