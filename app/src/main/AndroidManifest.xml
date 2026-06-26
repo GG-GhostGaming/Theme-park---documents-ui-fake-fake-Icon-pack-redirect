@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.user.iconpack">
-    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
 
     <application
         android:allowBackup="false"
@@ -19,13 +18,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <provider
-            android:name=".MyDocumentsProvider"
-            android:authorities="com.user.iconpack.documents"
-            android:exported="true"
-            android:grantUriPermissions="true"
-            android:permission="android.permission.BIND_DOCUMENTS_PROVIDER">
-        </provider>
     </application>
 </manifest>
