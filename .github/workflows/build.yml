@@ -31,8 +31,15 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+      - name: Generate Gradle wrapper (if missing)
+        run: |
+          gradle wrapper --gradle-version 8.5 || true
+
+      - name: Make wrapper executable
+        run: chmod +x ./gradlew || true
+
+      - name: Build debug APK with wrapper
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
